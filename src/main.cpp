@@ -1,23 +1,66 @@
-// Template test file - check compiling, then replace with project code.
+#include "Factory.h"
+#include "GameObject.h"
+#include "InputDispatcher.h"
 #include <SFML/Graphics.hpp>
+#include <vector>
+using namespace sf;
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode({200, 200}), "SFML works!");
-    sf::CircleShape shape(100.f);
-    shape.setFillColor(sf::Color::Green);
+    // Create a fullscreen window
+    RenderWindow window(
+        VideoMode::getDesktopMode(), "Booster", Style::Fullscreen
+    );
 
+    // A VertexArray to hold all our graphics.
+    VertexArray canvas(Quads, 0);
+
+    // This can dispatch events to any object.
+    InputDispatcher inputDispatcher(&window);
+
+    // Everything will be a game object. This vector will hold them all.
+    std::vector<GameObject> gameObjects;
+
+    // This class has all the knowledge to construct game objects that do many
+    // different things.
+    Factory factory(&window);
+
+    // This call will send the vector of game objects the canvas to draw on and
+    // the input dispatcher to the factory to set up the game.
+    factory.loadLevel(gameObjects, canvas, inputDispatcher);
+
+    // A clock for timing
+    Clock clock;
+
+    // The color we use for the background
+    const Color BACKGROUND_COLOUR(100, 100, 100, 255);
+
+    // This is the game loop
     while (window.isOpen())
     {
-        sf::Event event;
-        while (window.pollEvent(event))
+        // Measure the time taken this frame.
+        float timeTakenInSeconds = clock.restart().asSeconds();
+
+        // Handle the player input.
+        inputDispatcher.dispatchInputEvents();
+
+        // Clear the previous frame
+        window.clear(BACKGROUND_COLOUR);
+
+        // Update all the game objects.
+        for (auto& gameObject : gameObjects)
         {
-            if (event.type == sf::Event::Closed)
-                window.close();
+            gameObject.update(timeTakenInSeconds);
         }
 
-        window.clear();
-        window.draw(shape);
+        // Draw all the game objects to the canvas.
+        for (auto& gameObject : gameObjects)
+        {
+            gameObject.draw(canvas);
+        }
+
+        // Show the new frame
         window.display();
     }
+    return 0;
 }
