@@ -59,6 +59,8 @@ int main()
             gameObject.draw(canvas);
         }
 
+        // Temporary code
+        window.draw(canvas, factory.m_Texture);
         // Show the new frame
         window.display();
     }
